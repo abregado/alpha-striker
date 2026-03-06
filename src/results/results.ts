@@ -1,10 +1,110 @@
 import type { AttackResult, DiceRoll } from '../types';
-import { animateCounter, wait } from '../lib/animate';
+import { wait } from '../lib/animate';
 import { playRoll, playHit, playCrit, playMiss } from '../lib/audio';
 import { burstCrit } from '../lib/particles';
 
-const DIE_CYCLE_MS = 900;
-const DIE_GAP_MS   = 500;
+const STAGGER_MS = 250;   // delay between each die appearing
+const FILL_MS    = 500;   // time to fill all 11 pips
+const PAUSE_MS   = 150;   // hold at full before draining
+const DRAIN_MS   = 400;   // time to drain back to rolled value
+const BASE_MS    = 80;    // initial delay to ensure DOM is painted
+
+// pip index 0–10 maps to die value 2–12
+function pipColor(index: number): string {
+  const t = index / 10;
+  if (t <= 0.5) {
+    const s = t / 0.5;
+    return `rgb(${lerp(239,234,s)},${lerp(68,179,s)},${lerp(68,8,s)})`;
+  } else {
+    const s = (t - 0.5) / 0.5;
+    return `rgb(${lerp(234,52,s)},${lerp(179,211,s)},${lerp(8,153,s)})`;
+  }
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return Math.round(a + (b - a) * t);
+}
+
+function createDieRow(index: number): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'die-row';
+
+  const idx = document.createElement('span');
+  idx.className = 'die-row__index';
+  idx.textContent = String(index);
+
+  const pipsEl = document.createElement('div');
+  pipsEl.className = 'die-row__pips';
+  for (let i = 0; i < 11; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'die-pip';
+    pip.style.setProperty('--pip-color', pipColor(i));
+    pipsEl.appendChild(pip);
+  }
+
+  const result = document.createElement('div');
+  result.className = 'die-row__result';
+
+  row.append(idx, pipsEl, result);
+  return row;
+}
+
+function animatePips(pipsEl: HTMLElement, finalValue: number): Promise<void> {
+  return new Promise(resolve => {
+    const pips = Array.from(pipsEl.querySelectorAll('.die-pip')) as HTMLElement[];
+    const finalIdx = finalValue - 2; // 0-indexed pip for the rolled value
+
+    // Phase 1: fill all 11 pips left to right
+    const fillStep = FILL_MS / 11;
+    for (let i = 0; i < 11; i++) {
+      setTimeout(() => pips[i].classList.add('die-pip--active'), i * fillStep);
+    }
+
+    // Phase 2: drain from right, stopping at finalIdx
+    const drainCount = 10 - finalIdx;
+    if (drainCount > 0) {
+      const drainStep = DRAIN_MS / drainCount;
+      for (let j = 0; j < drainCount; j++) {
+        setTimeout(
+          () => pips[10 - j].classList.remove('die-pip--active'),
+          FILL_MS + PAUSE_MS + j * drainStep,
+        );
+      }
+    }
+
+    setTimeout(resolve, FILL_MS + PAUSE_MS + DRAIN_MS);
+  });
+}
+
+function revealDieRow(dieEl: HTMLElement, roll: DiceRoll): void {
+  const resultEl = dieEl.querySelector('.die-row__result') as HTMLElement;
+  if (roll.isCrit) {
+    dieEl.classList.add('die-row--crit');
+    resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">CRIT!</span>`;
+    playCrit();
+    burstCrit(dieEl);
+  } else if (roll.isHit) {
+    dieEl.classList.add('die-row--hit');
+    resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">HIT</span>`;
+    playHit();
+  } else {
+    dieEl.classList.add('die-row--miss');
+    resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">miss</span>`;
+    playMiss();
+  }
+}
+
+async function animateDieRow(dieEl: HTMLElement, roll: DiceRoll, delay: number): Promise<void> {
+  await wait(BASE_MS + delay);
+
+  dieEl.classList.add('die-row--visible');
+  playRoll();
+
+  const pipsEl = dieEl.querySelector('.die-row__pips') as HTMLElement;
+  await animatePips(pipsEl, roll.total);
+
+  revealDieRow(dieEl, roll);
+}
 
 export async function showResults(
   container: HTMLElement,
@@ -15,7 +115,7 @@ export async function showResults(
   container.innerHTML = '';
   container.className = 'results-screen';
 
-  // ── Target number breakdown ───────────────────────────────────────────────
+  // Target number
   const tnEl = document.createElement('div');
   tnEl.className = 'results-target';
   tnEl.innerHTML = `
@@ -24,16 +124,12 @@ export async function showResults(
   `;
   container.appendChild(tnEl);
 
-  // ── Dice section ──────────────────────────────────────────────────────────
-  const diceSection = document.createElement('div');
-  diceSection.className = 'dice-section';
-  container.appendChild(diceSection);
+  // Vertical dice list
+  const diceList = document.createElement('div');
+  diceList.className = 'dice-list';
+  container.appendChild(diceList);
 
-  const diceGrid = document.createElement('div');
-  diceGrid.className = 'dice-grid';
-  diceSection.appendChild(diceGrid);
-
-  // ── Summary (rendered but hidden until end) ───────────────────────────────
+  // Summary (hidden initially)
   const summary = document.createElement('div');
   summary.className = 'results-summary results-summary--hidden';
   container.appendChild(summary);
@@ -50,43 +146,22 @@ export async function showResults(
   newAttackBtn.addEventListener('click', onNewAttack);
   container.appendChild(newAttackBtn);
 
-  // ── Animate each die ──────────────────────────────────────────────────────
-  for (let i = 0; i < result.rolls.length; i++) {
-    const roll = result.rolls[i];
-    const dieEl = createDieCard(i + 1);
-    diceGrid.appendChild(dieEl);
+  // Launch all die animations in parallel with staggered start times
+  const promises = result.rolls.map((roll, i) => {
+    const dieEl = createDieRow(i + 1);
+    diceList.appendChild(dieEl);
+    return animateDieRow(dieEl, roll, i * STAGGER_MS);
+  });
 
-    // Stagger appearance
-    await wait(i === 0 ? 300 : DIE_GAP_MS);
-
-    // Animate entrance
-    dieEl.classList.add('die--entering');
-    await wait(50); // allow layout
-    dieEl.classList.remove('die--entering');
-    dieEl.classList.add('die--visible');
-
-    // Roll sound + cycling
-    playRoll();
-    const valueEl = dieEl.querySelector('.die__value') as HTMLElement;
-    await animateCounter(valueEl, roll.total, DIE_CYCLE_MS, 2, 12);
-
-    // Reveal result
-    await wait(200);
-    await revealDie(dieEl, roll);
-  }
-
-  // ── Show summary ──────────────────────────────────────────────────────────
-  await wait(600);
+  await Promise.all(promises);
+  await wait(400);
 
   const hitText = result.hits === 1 ? '1 Hit' : `${result.hits} Hits`;
   const critText = result.crits > 0
     ? `<span class="summary-crits">${result.crits} Critical${result.crits > 1 ? 's' : ''}!</span>`
     : '';
 
-  summary.innerHTML = `
-    <div class="summary-hits">${hitText}</div>
-    ${critText}
-  `;
+  summary.innerHTML = `<div class="summary-hits">${hitText}</div>${critText}`;
   summary.classList.remove('results-summary--hidden');
   summary.classList.add('results-summary--show');
 
@@ -95,37 +170,4 @@ export async function showResults(
 
   newAttackBtn.classList.remove('results-summary--hidden');
   newAttackBtn.classList.add('results-summary--show');
-}
-
-function createDieCard(index: number): HTMLElement {
-  const card = document.createElement('div');
-  card.className = 'die die--entering';
-  card.innerHTML = `
-    <span class="die__index">${index}</span>
-    <span class="die__value">—</span>
-    <span class="die__result"></span>
-  `;
-  return card;
-}
-
-async function revealDie(dieEl: HTMLElement, roll: DiceRoll): Promise<void> {
-  const resultEl = dieEl.querySelector('.die__result') as HTMLElement;
-
-  if (roll.isCrit) {
-    dieEl.classList.add('die--crit');
-    resultEl.textContent = 'CRITICAL!';
-    playCrit();
-    await wait(150);
-    burstCrit(dieEl);
-  } else if (roll.isHit) {
-    dieEl.classList.add('die--hit');
-    resultEl.textContent = 'HIT';
-    playHit();
-  } else {
-    dieEl.classList.add('die--miss');
-    resultEl.textContent = 'miss';
-    playMiss();
-  }
-
-  await wait(400);
 }

@@ -86,16 +86,16 @@ html, body {
 
 /* Slide transitions */
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(32px); }
+  from { opacity: 0; transform: translateX(24px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes slideOutLeft {
   from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 0; transform: translateX(-24px); }
 }
 
-#app-main.main--enter { animation: slideInRight 0.3s ease both; }
-#app-main.main--exit  { animation: slideOutLeft 0.2s ease both; }
+#app-main.main--enter { animation: slideInRight 0.18s ease both; }
+#app-main.main--exit  { animation: slideOutLeft 0.12s ease both; }
 
 /* ── Step title block ─────────────────────────────────────────────────────── */
 .step-title-block { flex-shrink: 0; }
@@ -115,6 +115,25 @@ html, body {
   color: var(--text-dim);
   letter-spacing: 0.06em;
 }
+
+/* ── Back button ──────────────────────────────────────────────────────────── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 8px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+}
+.back-btn:active { color: var(--text); }
 
 /* ── Step content wrapper ─────────────────────────────────────────────────── */
 .step-content {
@@ -311,99 +330,123 @@ html, body {
   color: var(--accent);
 }
 
-/* ── Dice grid ────────────────────────────────────────────────────────────── */
-.dice-section { display: flex; flex-direction: column; gap: 12px; }
-
-.dice-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-/* ── Individual die card ──────────────────────────────────────────────────── */
-.die {
-  position: relative;
+/* ── Dice list (vertical) ─────────────────────────────────────────────────── */
+.dice-list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Die row ──────────────────────────────────────────────────────────────── */
+.die-row {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 16px 8px;
-  min-height: 110px;
+  gap: 10px;
+  padding: 10px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   opacity: 0;
-  transform: translateY(16px) scale(0.9);
-  transition: opacity 0.25s ease, transform 0.25s ease, background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  transform: translateX(-14px);
+  transition: opacity 0.18s ease, transform 0.18s ease,
+              background 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 
-.die--visible {
+.die-row--visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.die__index {
-  position: absolute;
-  top: 7px;
-  left: 10px;
-  font-size: 0.6rem;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-}
-
-.die__value {
-  font-size: 2.6rem;
-  font-weight: 700;
-  line-height: 1;
-  font-family: inherit;
-  transition: color 0.2s;
-}
-
-.die__result {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 700;
-  min-height: 1em;
-  transition: color 0.2s;
+  transform: translateX(0);
 }
 
 /* Hit state */
 @keyframes hitFlash {
   0%   { box-shadow: 0 0 0 0 var(--hit-glow); }
-  40%  { box-shadow: 0 0 0 14px var(--hit-glow); }
-  100% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.1); }
+  40%  { box-shadow: 0 0 0 10px var(--hit-glow); }
+  100% { box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08); }
 }
 
-.die--hit {
+.die-row--hit {
   background: var(--hit-bg);
   border-color: var(--hit);
-  animation: hitFlash 0.5s ease forwards;
+  animation: hitFlash 0.45s ease forwards;
 }
-.die--hit .die__value  { color: var(--hit); }
-.die--hit .die__result { color: var(--hit); }
+.die-row--hit .die-row__value,
+.die-row--hit .die-row__label { color: var(--hit); }
 
 /* Crit state */
 @keyframes critPulse {
-  0%   { box-shadow: 0 0 0 0 var(--crit-glow); transform: scale(1); }
-  25%  { box-shadow: 0 0 0 18px var(--crit-glow); transform: scale(1.04); }
-  60%  { box-shadow: 0 0 0 8px rgba(244,63,94,0.15); transform: scale(1.02); }
-  100% { box-shadow: 0 0 0 4px rgba(244,63,94,0.08); transform: scale(1); }
+  0%   { box-shadow: 0 0 0 0 var(--crit-glow); }
+  25%  { box-shadow: 0 0 0 14px var(--crit-glow); }
+  100% { box-shadow: 0 0 0 4px rgba(244,63,94,0.08); }
 }
 
-.die--crit {
+.die-row--crit {
   background: var(--crit-bg);
   border-color: var(--crit);
-  animation: critPulse 0.6s ease forwards;
+  animation: critPulse 0.5s ease forwards;
 }
-.die--crit .die__value  { color: var(--crit); font-size: 3rem; }
-.die--crit .die__result { color: var(--crit); font-size: 0.75rem; letter-spacing: 0.15em; }
+.die-row--crit .die-row__value,
+.die-row--crit .die-row__label { color: var(--crit); }
 
 /* Miss state */
-.die--miss { background: var(--bg); border-color: var(--miss); }
-.die--miss .die__value  { color: var(--miss-text); }
-.die--miss .die__result { color: var(--miss-text); font-weight: 400; }
+.die-row--miss {
+  background: var(--bg);
+  border-color: var(--miss);
+}
+.die-row--miss .die-row__value,
+.die-row--miss .die-row__label { color: var(--miss-text); }
+
+/* ── Die row parts ────────────────────────────────────────────────────────── */
+.die-row__index {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  min-width: 12px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.die-row__pips {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.die-pip {
+  flex: 1;
+  height: 20px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background 0.05s ease;
+}
+
+.die-pip--active {
+  background: var(--pip-color);
+}
+
+.die-row__result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 48px;
+  flex-shrink: 0;
+}
+
+.die-row__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+.die-row__label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
 
 /* ── Results summary ──────────────────────────────────────────────────────── */
 @keyframes summaryReveal {

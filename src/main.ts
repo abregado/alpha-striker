@@ -27,6 +27,13 @@ const STEPS: StepDefinition[] = [
 let currentStep = 0;
 let state: AttackState = {};
 
+function back() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderStep(currentStep);
+  }
+}
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const progressFill  = document.getElementById('progress-bar-fill')!;
 const stepLabel     = document.getElementById('step-label')!;
@@ -47,6 +54,15 @@ function renderStep(index: number) {
   setTimeout(() => {
     main.innerHTML = '';
     main.classList.remove('main--exit');
+
+    // Back button (all steps except the first)
+    if (index > 0) {
+      const backBtn = document.createElement('button');
+      backBtn.className = 'back-btn';
+      backBtn.textContent = '← Back';
+      backBtn.addEventListener('click', back);
+      main.appendChild(backBtn);
+    }
 
     // Title block
     const titleBlock = document.createElement('div');
@@ -78,9 +94,8 @@ function renderStep(index: number) {
     });
 
     main.classList.add('main--enter');
-    // Remove the enter class after animation completes
-    setTimeout(() => main.classList.remove('main--enter'), 350);
-  }, 200);
+    setTimeout(() => main.classList.remove('main--enter'), 200);
+  }, 120);
 }
 
 function advance() {
@@ -127,8 +142,8 @@ function showResultsScreen() {
     );
 
     main.classList.add('main--enter');
-    setTimeout(() => main.classList.remove('main--enter'), 350);
-  }, 200);
+    setTimeout(() => main.classList.remove('main--enter'), 200);
+  }, 120);
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────

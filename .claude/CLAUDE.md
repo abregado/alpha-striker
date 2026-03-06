@@ -21,6 +21,6 @@ Asks a series of questions, rolls dice, and reveals results with sound and anima
 
 ## Documentation
 
-- [Features & architecture](.claude/docs/features.md) — game rules, step pipeline, key files, how to add steps
+- [Features & architecture](.claude/docs/features.md) — game rules, step pipeline, key files, how to add steps, PWA/deployment, results animation, fullscreen
 
 

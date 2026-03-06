@@ -48,11 +48,18 @@ Order in the array = order shown to the player.
 
 ## Results Screen
 - Displays the calculated target number
-- Animates each die in sequence: slot-machine number cycling → locks on result
-- Per-die reveal: **HIT** (green glow), **miss** (muted), **CRITICAL!** (red pulse + canvas particle burst)
-- Sound effects for each outcome via Web Audio API (no audio files — fully procedural)
+- Vertical list of die rows, one per damage point
+- All die animations launch simultaneously with `STAGGER_MS` (250ms) between each start; each has the same total duration (`FILL_MS + PAUSE_MS + DRAIN_MS` = 1050ms)
+- **Pip bar**: 11 pips filling left→right (red→yellow→green gradient), then draining right→left stopping at the rolled value. Pip index = value − 2.
+- Sounds: `playRoll()` fires when each die appears (shoot sound); `playHit()` / `playMiss()` / `playCrit()` fire on reveal
+- Per-die reveal: **HIT** (green glow), **miss** (muted), **CRIT!** (red pulse + canvas particle burst)
 - Summary shows total hits and criticals
-- "Roll Again" resets to step 1
+- "Reroll Same Attack" and "New Attack" buttons appear after all dice settle
+
+## Step Navigation
+- Back button (`← Back`) appears on all steps after the first
+- `back()` in `main.ts` decrements `currentStep` and re-renders the previous step
+- Step transition: 120ms slide-out, 180ms slide-in (shortened from 200/300ms for snappier feel)
 
 ## PWA & Deployment
 
