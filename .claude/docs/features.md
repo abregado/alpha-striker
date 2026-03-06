@@ -56,6 +56,23 @@ Order in the array = order shown to the player.
 - Summary shows total hits and criticals
 - "Reroll Same Attack" and "New Attack" buttons appear after all dice settle
 
+## Weapon Types
+Three weapon types affect the sounds played in the results screen: **Laser** (0), **Ballistic** (1), **Missile** (2).
+
+- Selected on the **Damage Rating** step via three optional toggle buttons at the bottom (deselect to return to random)
+- Stored in `state['weaponType']` via the `onExtra` callback (`-1` = not set / random)
+- If not set, each die picks a random weapon type independently in `results.ts`
+- Sounds per type:
+  - **Laser**: zap sweep (shoot), high crackle (hit), fading tone (miss)
+  - **Ballistic**: short crack (shoot), metallic clang (hit), soft thud (miss)
+  - **Missile**: rising whoosh (shoot), deep explosion (hit), doppler fall (miss)
+- Critical hits always use `playCrit()` regardless of weapon type
+- Each die row shows a coloured badge: **L** (blue), **B** (orange), **M** (purple)
+
+### Adding a new weapon type
+1. Add sounds in `audio.ts` and add cases to `playWeaponShoot/Hit/Miss`
+2. Add the label to `WEAPON_LABELS` in `damageStep.ts` and `WEAPON_SHORT`/`WEAPON_BADGE_COLOR` in `results.ts`
+
 ## Step Navigation
 - Back button (`← Back`) appears on all steps after the first
 - `back()` in `main.ts` decrements `currentStep` and re-renders the previous step

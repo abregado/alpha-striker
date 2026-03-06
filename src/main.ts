@@ -91,6 +91,8 @@ function renderStep(index: number) {
       resumeAudio();
       state[step.id] = value;
       advance();
+    }, (key, value) => {
+      state[key] = value;
     });
 
     main.classList.add('main--enter');
@@ -128,10 +130,12 @@ function showResultsScreen() {
     };
 
     const result = resolveAttack(data);
+    const weaponType = state['weaponType'] ?? -1;
 
     showResults(
       main,
       result,
+      weaponType,
       () => showResultsScreen(),   // reroll: re-resolve with same state
       () => {                       // new attack: reset everything
         currentStep = 0;

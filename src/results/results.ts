@@ -1,13 +1,17 @@
 import type { AttackResult, DiceRoll } from '../types';
 import { wait } from '../lib/animate';
-import { playRoll, playHit, playCrit, playMiss } from '../lib/audio';
+import { playWeaponShoot, playWeaponHit, playWeaponMiss, playCrit } from '../lib/audio';
 import { burstCrit } from '../lib/particles';
 
-const STAGGER_MS = 250;   // delay between each die appearing
-const FILL_MS    = 500;   // time to fill all 11 pips
-const PAUSE_MS   = 150;   // hold at full before draining
-const DRAIN_MS   = 400;   // time to drain back to rolled value
-const BASE_MS    = 80;    // initial delay to ensure DOM is painted
+const STAGGER_MS = 250;
+const FILL_MS    = 500;
+const PAUSE_MS   = 150;
+const DRAIN_MS   = 400;
+const BASE_MS    = 80;
+
+const WEAPON_SHORT = ['L', 'B', 'M'];  // badge labels
+// Badge colors per type (laser=blue, ballistic=orange, missile=purple)
+const WEAPON_BADGE_COLOR = ['#60a5fa', '#fb923c', '#a78bfa'];
 
 // pip index 0–10 maps to die value 2–12
 function pipColor(index: number): string {
@@ -25,13 +29,19 @@ function lerp(a: number, b: number, t: number): number {
   return Math.round(a + (b - a) * t);
 }
 
-function createDieRow(index: number): HTMLElement {
+function createDieRow(index: number, dieType: number): HTMLElement {
   const row = document.createElement('div');
   row.className = 'die-row';
 
   const idx = document.createElement('span');
   idx.className = 'die-row__index';
   idx.textContent = String(index);
+
+  const badge = document.createElement('span');
+  badge.className = 'die-row__type';
+  badge.textContent = WEAPON_SHORT[dieType];
+  badge.style.color = WEAPON_BADGE_COLOR[dieType];
+  badge.style.borderColor = WEAPON_BADGE_COLOR[dieType];
 
   const pipsEl = document.createElement('div');
   pipsEl.className = 'die-row__pips';
@@ -45,22 +55,20 @@ function createDieRow(index: number): HTMLElement {
   const result = document.createElement('div');
   result.className = 'die-row__result';
 
-  row.append(idx, pipsEl, result);
+  row.append(idx, badge, pipsEl, result);
   return row;
 }
 
 function animatePips(pipsEl: HTMLElement, finalValue: number): Promise<void> {
   return new Promise(resolve => {
     const pips = Array.from(pipsEl.querySelectorAll('.die-pip')) as HTMLElement[];
-    const finalIdx = finalValue - 2; // 0-indexed pip for the rolled value
+    const finalIdx = finalValue - 2;
 
-    // Phase 1: fill all 11 pips left to right
     const fillStep = FILL_MS / 11;
     for (let i = 0; i < 11; i++) {
       setTimeout(() => pips[i].classList.add('die-pip--active'), i * fillStep);
     }
 
-    // Phase 2: drain from right, stopping at finalIdx
     const drainCount = 10 - finalIdx;
     if (drainCount > 0) {
       const drainStep = DRAIN_MS / drainCount;
@@ -76,7 +84,7 @@ function animatePips(pipsEl: HTMLElement, finalValue: number): Promise<void> {
   });
 }
 
-function revealDieRow(dieEl: HTMLElement, roll: DiceRoll): void {
+function revealDieRow(dieEl: HTMLElement, roll: DiceRoll, dieType: number): void {
   const resultEl = dieEl.querySelector('.die-row__result') as HTMLElement;
   if (roll.isCrit) {
     dieEl.classList.add('die-row--crit');
@@ -86,36 +94,41 @@ function revealDieRow(dieEl: HTMLElement, roll: DiceRoll): void {
   } else if (roll.isHit) {
     dieEl.classList.add('die-row--hit');
     resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">HIT</span>`;
-    playHit();
+    playWeaponHit(dieType);
   } else {
     dieEl.classList.add('die-row--miss');
     resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">miss</span>`;
-    playMiss();
+    playWeaponMiss(dieType);
   }
 }
 
-async function animateDieRow(dieEl: HTMLElement, roll: DiceRoll, delay: number): Promise<void> {
+async function animateDieRow(
+  dieEl: HTMLElement,
+  roll: DiceRoll,
+  dieType: number,
+  delay: number,
+): Promise<void> {
   await wait(BASE_MS + delay);
 
   dieEl.classList.add('die-row--visible');
-  playRoll();
+  playWeaponShoot(dieType);
 
   const pipsEl = dieEl.querySelector('.die-row__pips') as HTMLElement;
   await animatePips(pipsEl, roll.total);
 
-  revealDieRow(dieEl, roll);
+  revealDieRow(dieEl, roll, dieType);
 }
 
 export async function showResults(
   container: HTMLElement,
   result: AttackResult,
+  weaponType: number,        // -1 = random per die, 0=laser, 1=ballistic, 2=missile
   onReroll: () => void,
   onNewAttack: () => void,
 ) {
   container.innerHTML = '';
   container.className = 'results-screen';
 
-  // Target number
   const tnEl = document.createElement('div');
   tnEl.className = 'results-target';
   tnEl.innerHTML = `
@@ -124,12 +137,10 @@ export async function showResults(
   `;
   container.appendChild(tnEl);
 
-  // Vertical dice list
   const diceList = document.createElement('div');
   diceList.className = 'dice-list';
   container.appendChild(diceList);
 
-  // Summary (hidden initially)
   const summary = document.createElement('div');
   summary.className = 'results-summary results-summary--hidden';
   container.appendChild(summary);
@@ -146,11 +157,11 @@ export async function showResults(
   newAttackBtn.addEventListener('click', onNewAttack);
   container.appendChild(newAttackBtn);
 
-  // Launch all die animations in parallel with staggered start times
   const promises = result.rolls.map((roll, i) => {
-    const dieEl = createDieRow(i + 1);
+    const dieType = weaponType >= 0 ? weaponType : Math.floor(Math.random() * 3);
+    const dieEl = createDieRow(i + 1, dieType);
     diceList.appendChild(dieEl);
-    return animateDieRow(dieEl, roll, i * STAGGER_MS);
+    return animateDieRow(dieEl, roll, dieType, i * STAGGER_MS);
   });
 
   await Promise.all(promises);

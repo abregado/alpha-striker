@@ -118,22 +118,28 @@ html, body {
 
 /* ── Back button ──────────────────────────────────────────────────────────── */
 .back-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 0 8px;
-  background: none;
-  border: none;
+  gap: 6px;
+  padding: 10px 16px;
+  min-height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   color: var(--text-dim);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-family: inherit;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.back-btn:active { color: var(--text); }
+.back-btn:active {
+  background: var(--bg-card-2);
+  border-color: var(--accent);
+  color: var(--text);
+}
 
 /* ── Step content wrapper ─────────────────────────────────────────────────── */
 .step-content {
@@ -525,6 +531,69 @@ html, body {
 .new-attack-btn.results-summary--show {
   visibility: visible;
   animation: summaryReveal 0.4s 0.2s ease both;
+}
+
+/* ── Weapon type section (damage step) ────────────────────────────────────── */
+.weapon-type-section {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weapon-type-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.weapon-type-row {
+  display: flex;
+  gap: 8px;
+}
+
+.weapon-type-btn {
+  flex: 1;
+  padding: 12px 4px;
+  min-height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.weapon-type-btn:active { opacity: 0.75; transform: scale(0.97); }
+
+.weapon-type-btn--active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Per-weapon-type active colours */
+.weapon-type-btn[data-wtype="0"].weapon-type-btn--active { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.1); }
+.weapon-type-btn[data-wtype="1"].weapon-type-btn--active { border-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.1); }
+.weapon-type-btn[data-wtype="2"].weapon-type-btn--active { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.1); }
+
+/* ── Die type badge (results) ─────────────────────────────────────────────── */
+.die-row__type {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+  flex-shrink: 0;
 }
 
 /* ── Fullscreen modal ─────────────────────────────────────────────────────── */

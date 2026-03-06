@@ -29,7 +29,11 @@ export interface StepDefinition<T = number> {
   label: string;        // short label for progress indicator
   title: string;        // heading shown to player
   subtitle?: string;
-  render(container: HTMLElement, onComplete: (value: T) => void): void;
+  render(
+    container: HTMLElement,
+    onComplete: (value: T) => void,
+    onExtra?: (key: string, value: number) => void,
+  ): void;
 }
 
 // Collected values keyed by step id
