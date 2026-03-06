@@ -484,6 +484,73 @@ html, body {
   animation: summaryReveal 0.4s 0.2s ease both;
 }
 
+/* ── Fullscreen modal ─────────────────────────────────────────────────────── */
+.fs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 13, 18, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.fs-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 20px;
+  max-width: 320px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fs-modal__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.fs-modal__desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.fs-modal__btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fs-modal__btn:active { opacity: 0.8; transform: scale(0.97); }
+
+.fs-modal__btn--primary {
+  background: var(--accent);
+  border: none;
+  color: #000;
+}
+
+.fs-modal__btn--secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
 /* ── Particle canvas ──────────────────────────────────────────────────────── */
 #particle-canvas {
   position: fixed;

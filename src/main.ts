@@ -1,4 +1,5 @@
 import './style.css';
+import { initFullscreen } from './fullscreen';
 import type { AttackData, AttackState, StepDefinition } from './types';
 import { resolveAttack } from './engine';
 import { resumeAudio } from './lib/audio';
@@ -131,4 +132,5 @@ function showResultsScreen() {
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
+initFullscreen();
 renderStep(0);
