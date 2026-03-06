@@ -12,6 +12,6 @@ export const heatStep: StepDefinition = {
       { label: '1', sublabel: 'Warm',     value: 1 },
       { label: '2', sublabel: 'Hot',      value: 2 },
       { label: '3', sublabel: 'Critical', value: 3 },
-    ], onComplete, { columns: 2 });
+    ], onComplete);
   },
 };

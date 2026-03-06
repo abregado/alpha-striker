@@ -113,12 +113,17 @@ function showResultsScreen() {
 
     const result = resolveAttack(data);
 
-    showResults(main, result, () => {
-      currentStep = 0;
-      state = {};
-      header.classList.remove('header--hidden');
-      renderStep(0);
-    });
+    showResults(
+      main,
+      result,
+      () => showResultsScreen(),   // reroll: re-resolve with same state
+      () => {                       // new attack: reset everything
+        currentStep = 0;
+        state = {};
+        header.classList.remove('header--hidden');
+        renderStep(0);
+      },
+    );
 
     main.classList.add('main--enter');
     setTimeout(() => main.classList.remove('main--enter'), 350);

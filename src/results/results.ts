@@ -9,7 +9,8 @@ const DIE_GAP_MS   = 500;
 export async function showResults(
   container: HTMLElement,
   result: AttackResult,
-  onRollAgain: () => void,
+  onReroll: () => void,
+  onNewAttack: () => void,
 ) {
   container.innerHTML = '';
   container.className = 'results-screen';
@@ -37,11 +38,17 @@ export async function showResults(
   summary.className = 'results-summary results-summary--hidden';
   container.appendChild(summary);
 
-  const rollAgainBtn = document.createElement('button');
-  rollAgainBtn.className = 'roll-again-btn results-summary--hidden';
-  rollAgainBtn.textContent = 'Roll Again';
-  rollAgainBtn.addEventListener('click', onRollAgain);
-  container.appendChild(rollAgainBtn);
+  const rerollBtn = document.createElement('button');
+  rerollBtn.className = 'reroll-btn results-summary--hidden';
+  rerollBtn.textContent = 'Reroll Same Attack';
+  rerollBtn.addEventListener('click', onReroll);
+  container.appendChild(rerollBtn);
+
+  const newAttackBtn = document.createElement('button');
+  newAttackBtn.className = 'new-attack-btn results-summary--hidden';
+  newAttackBtn.textContent = 'New Attack';
+  newAttackBtn.addEventListener('click', onNewAttack);
+  container.appendChild(newAttackBtn);
 
   // ── Animate each die ──────────────────────────────────────────────────────
   for (let i = 0; i < result.rolls.length; i++) {
@@ -83,8 +90,11 @@ export async function showResults(
   summary.classList.remove('results-summary--hidden');
   summary.classList.add('results-summary--show');
 
-  rollAgainBtn.classList.remove('results-summary--hidden');
-  rollAgainBtn.classList.add('results-summary--show');
+  rerollBtn.classList.remove('results-summary--hidden');
+  rerollBtn.classList.add('results-summary--show');
+
+  newAttackBtn.classList.remove('results-summary--hidden');
+  newAttackBtn.classList.add('results-summary--show');
 }
 
 function createDieCard(index: number): HTMLElement {

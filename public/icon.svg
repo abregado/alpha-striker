@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="#0a0d12"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#e07b39" stroke-width="12"/>
+
+  <!-- Inner ring -->
+  <circle cx="256" cy="256" r="80" fill="none" stroke="#e07b39" stroke-width="8"/>
+
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="16" fill="#e07b39"/>
+
+  <!-- Crosshair lines — top -->
+  <line x1="256" y1="56" x2="256" y2="176" stroke="#e07b39" stroke-width="10" stroke-linecap="round"/>
+  <!-- bottom -->
+  <line x1="256" y1="336" x2="256" y2="456" stroke="#e07b39" stroke-width="10" stroke-linecap="round"/>
+  <!-- left -->
+  <line x1="56" y1="256" x2="176" y2="256" stroke="#e07b39" stroke-width="10" stroke-linecap="round"/>
+  <!-- right -->
+  <line x1="336" y1="256" x2="456" y2="256" stroke="#e07b39" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Corner tick marks (top-left) -->
+  <line x1="110" y1="148" x2="148" y2="110" stroke="#e07b39" stroke-width="6" stroke-linecap="round"/>
+  <!-- top-right -->
+  <line x1="364" y1="110" x2="402" y2="148" stroke="#e07b39" stroke-width="6" stroke-linecap="round"/>
+  <!-- bottom-left -->
+  <line x1="110" y1="364" x2="148" y2="402" stroke="#e07b39" stroke-width="6" stroke-linecap="round"/>
+  <!-- bottom-right -->
+  <line x1="364" y1="402" x2="402" y2="364" stroke="#e07b39" stroke-width="6" stroke-linecap="round"/>
+</svg>

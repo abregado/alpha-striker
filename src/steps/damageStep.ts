@@ -11,6 +11,6 @@ export const damageStep: StepDefinition = {
     makeOptionGrid(container, values.map(v => ({
       label: String(v),
       value: v,
-    })), onComplete, { columns: 4 });
+    })), onComplete);
   },
 };

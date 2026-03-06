@@ -4,23 +4,16 @@ export interface OptionItem {
   value: number;
 }
 
-export interface GridOptions {
-  columns?: number;
-}
-
 /**
- * Renders a grid of tap-to-select buttons that auto-advance on selection.
+ * Renders a vertical list of tap-to-select buttons that auto-advance on selection.
  */
 export function makeOptionGrid(
   container: HTMLElement,
   items: OptionItem[],
   onComplete: (value: number) => void,
-  opts: GridOptions = {},
 ) {
-  const cols = opts.columns ?? 2;
   const grid = document.createElement('div');
   grid.className = 'option-grid';
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
   for (const item of items) {
     const btn = document.createElement('button');

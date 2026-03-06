@@ -54,6 +54,21 @@ Order in the array = order shown to the player.
 - Summary shows total hits and criticals
 - "Roll Again" resets to step 1
 
+## PWA & Deployment
+
+### GitHub Pages
+- Live URL: `https://abregado.github.io/alpha-striker/`
+- Auto-deploys on push to `main` via `.github/workflows/deploy.yml`
+- Build output: `./dist` (Vite, base path `/alpha-striker/`)
+- **One-time setup**: Repo Settings → Pages → Source → **GitHub Actions**
+
+### PWA (installable offline app)
+- `public/manifest.json` — app name, colors, icon, standalone display
+- `public/icon.svg` — orange targeting reticle on dark background
+- `public/sw.js` — cache-first service worker; precaches index, caches all fetched assets
+- SW registered inline in `index.html` bottom of `<body>`
+- Install via Chrome Android menu → "Add to Home Screen"
+
 ## Key Files
 | File | Purpose |
 |---|---|

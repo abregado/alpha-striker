@@ -6,6 +6,7 @@ If a task is too large for your context, then break it into several steps and wr
 Keep CLAUDE.md as small as possible, write yourself addition documentation for each feature as we go. Link back to those files here.
 You never need to run the build for me, i will do that in a separate termainla window
 you never need to do git commands, I will do that myself
+Dont use dependencies if we can just implement the feature that we need from the library
 
 ## Overview
 A mobile-first (portrait) tool for resolving shooting attacks in Battletech Alpha Strike.

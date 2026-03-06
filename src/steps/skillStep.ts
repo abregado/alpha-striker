@@ -14,6 +14,6 @@ export const skillStep: StepDefinition = {
       { label: '3', sublabel: 'Regular',   value: 3 },
       { label: '4', sublabel: 'Green',     value: 4 },
       { label: '5', sublabel: 'Recruit',   value: 5 },
-    ], onComplete, { columns: 3 });
+    ], onComplete);
   },
 };
