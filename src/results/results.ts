@@ -1,7 +1,18 @@
 import type { AttackResult, DiceRoll } from '../types';
 import { wait } from '../lib/animate';
-import { playWeaponShoot, playWeaponHit, playWeaponMiss, playCrit } from '../lib/audio';
+import { playWeaponShoot, playWeaponHit, playWeaponMiss, playWeaponCrit } from '../lib/audio';
 import { burstCrit } from '../lib/particles';
+
+// Decode a weapon type bitmask into a pool of available type indices.
+// 0 (or all bits set) = all three types available.
+function weaponPool(mask: number): number[] {
+  if (!mask || mask === 7) return [0, 1, 2];
+  const pool: number[] = [];
+  if (mask & 1) pool.push(0);
+  if (mask & 2) pool.push(1);
+  if (mask & 4) pool.push(2);
+  return pool.length ? pool : [0, 1, 2];
+}
 
 const STAGGER_MS = 250;
 const FILL_MS    = 500;
@@ -89,7 +100,7 @@ function revealDieRow(dieEl: HTMLElement, roll: DiceRoll, dieType: number): void
   if (roll.isCrit) {
     dieEl.classList.add('die-row--crit');
     resultEl.innerHTML = `<span class="die-row__value">${roll.total}</span><span class="die-row__label">CRIT!</span>`;
-    playCrit();
+    playWeaponCrit();
     burstCrit(dieEl);
   } else if (roll.isHit) {
     dieEl.classList.add('die-row--hit');
@@ -157,8 +168,9 @@ export async function showResults(
   newAttackBtn.addEventListener('click', onNewAttack);
   container.appendChild(newAttackBtn);
 
+  const pool = weaponPool(weaponType);
   const promises = result.rolls.map((roll, i) => {
-    const dieType = weaponType >= 0 ? weaponType : Math.floor(Math.random() * 3);
+    const dieType = pool[Math.floor(Math.random() * pool.length)];
     const dieEl = createDieRow(i + 1, dieType);
     diceList.appendChild(dieEl);
     return animateDieRow(dieEl, roll, dieType, i * STAGGER_MS);

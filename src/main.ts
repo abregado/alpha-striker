@@ -2,7 +2,7 @@ import './style.css';
 import { initFullscreen } from './fullscreen';
 import type { AttackData, AttackState, StepDefinition } from './types';
 import { resolveAttack } from './engine';
-import { resumeAudio } from './lib/audio';
+import { resumeAudio, preloadAudio } from './lib/audio';
 import { damageStep } from './steps/damageStep';
 import { skillStep }  from './steps/skillStep';
 import { heatStep }   from './steps/heatStep';
@@ -130,7 +130,7 @@ function showResultsScreen() {
     };
 
     const result = resolveAttack(data);
-    const weaponType = state['weaponType'] ?? -1;
+    const weaponType = state['weaponType'] ?? 0;
 
     showResults(
       main,
@@ -152,4 +152,5 @@ function showResultsScreen() {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 initFullscreen();
+preloadAudio();
 renderStep(0);

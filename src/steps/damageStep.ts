@@ -1,6 +1,8 @@
 import type { StepDefinition } from '../types';
 import { makeOptionGrid } from './stepHelpers';
 
+// Bitmask: bit 0 = Laser, bit 1 = Ballistic, bit 2 = Missile
+// 0 = none selected (treat as all available)
 const WEAPON_LABELS = ['Laser', 'Ballistic', 'Missile'];
 
 export const damageStep: StepDefinition = {
@@ -26,7 +28,7 @@ export const damageStep: StepDefinition = {
     const row = document.createElement('div');
     row.className = 'weapon-type-row';
 
-    let selectedType = -1; // -1 = random per die
+    let mask = 0;
 
     for (let i = 0; i < WEAPON_LABELS.length; i++) {
       const btn = document.createElement('button');
@@ -36,17 +38,15 @@ export const damageStep: StepDefinition = {
       btn.dataset.wtype = String(i);
 
       btn.addEventListener('click', () => {
-        if (selectedType === i) {
-          // Deselect → back to random
-          selectedType = -1;
+        const bit = 1 << i;
+        if (mask & bit) {
+          mask &= ~bit;
           btn.classList.remove('weapon-type-btn--active');
-          onExtra?.('weaponType', -1);
         } else {
-          selectedType = i;
-          row.querySelectorAll('.weapon-type-btn').forEach(b => b.classList.remove('weapon-type-btn--active'));
+          mask |= bit;
           btn.classList.add('weapon-type-btn--active');
-          onExtra?.('weaponType', i);
         }
+        onExtra?.('weaponType', mask);
       });
 
       row.appendChild(btn);

@@ -11,6 +11,57 @@ export function resumeAudio() {
   getCtx().resume();
 }
 
+// ── Audio file loading (try file first, fall back to procedural) ────────────
+const BASE_URL: string = (import.meta as any).env?.BASE_URL ?? '/';
+const fileCache = new Map<string, AudioBuffer | null>();
+
+async function loadBuffer(filename: string): Promise<AudioBuffer | null> {
+  const path = `${BASE_URL}audio/${filename}`;
+  if (fileCache.has(path)) return fileCache.get(path)!;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) { fileCache.set(path, null); return null; }
+    const buf = await getCtx().decodeAudioData(await res.arrayBuffer());
+    fileCache.set(path, buf);
+    return buf;
+  } catch {
+    fileCache.set(path, null);
+    return null;
+  }
+}
+
+function playBuffer(buf: AudioBuffer): void {
+  try {
+    const src = getCtx().createBufferSource();
+    src.buffer = buf;
+    src.connect(getCtx().destination);
+    src.start();
+  } catch { /* silently ignore */ }
+}
+
+function playFileOrFallback(filename: string, fallback: () => void): void {
+  void loadBuffer(filename).then(buf => buf ? playBuffer(buf) : fallback());
+}
+
+/**
+ * Preload all weapon audio files in the background.
+ * Place MP3s in public/audio/ using the filenames below.
+ * If a file is missing the procedural fallback plays automatically.
+ *   laser-shoot.mp3  laser-hit.mp3  laser-miss.mp3
+ *   ballistic-shoot.mp3  ballistic-hit.mp3  ballistic-miss.mp3
+ *   missile-shoot.mp3  missile-hit.mp3  missile-miss.mp3
+ *   crit.mp3
+ */
+export function preloadAudio(): void {
+  const files = [
+    'laser-shoot.mp3', 'laser-hit.mp3', 'laser-miss.mp3',
+    'ballistic-shoot.mp3', 'ballistic-hit.mp3', 'ballistic-miss.mp3',
+    'missile-shoot.mp3', 'missile-hit.mp3', 'missile-miss.mp3',
+    'crit.mp3',
+  ];
+  files.forEach(f => void loadBuffer(f));
+}
+
 function gain(ac: AudioContext, value: number, at = 0): GainNode {
   const g = ac.createGain();
   g.gain.setValueAtTime(value, at);
@@ -276,25 +327,29 @@ function playMissileMiss() {
   } catch { /* silently ignore */ }
 }
 
-/** Play the fire sound for a weapon type (0=laser, 1=ballistic, 2=missile). */
-export function playWeaponShoot(type: number) {
-  if (type === 0) playLaserShoot();
-  else if (type === 1) playBallisticShoot();
-  else playMissileShoot();
-}
+const WEAPON_FILES = [
+  ['laser-shoot.mp3',    'laser-hit.mp3',    'laser-miss.mp3'],
+  ['ballistic-shoot.mp3','ballistic-hit.mp3','ballistic-miss.mp3'],
+  ['missile-shoot.mp3',  'missile-hit.mp3',  'missile-miss.mp3'],
+] as const;
 
-/** Play the hit sound for a weapon type. */
-export function playWeaponHit(type: number) {
-  if (type === 0) playLaserHit();
-  else if (type === 1) playBallisticHit();
-  else playMissileHit();
-}
+const WEAPON_PROC: Array<[() => void, () => void, () => void]> = [
+  [playLaserShoot,    playLaserHit,    playLaserMiss],
+  [playBallisticShoot,playBallisticHit,playBallisticMiss],
+  [playMissileShoot,  playMissileHit,  playMissileMiss],
+];
 
-/** Play the miss sound for a weapon type. */
-export function playWeaponMiss(type: number) {
-  if (type === 0) playLaserMiss();
-  else if (type === 1) playBallisticMiss();
-  else playMissileMiss();
+export function playWeaponShoot(type: number): void {
+  playFileOrFallback(WEAPON_FILES[type]?.[0] ?? 'laser-shoot.mp3', WEAPON_PROC[type]?.[0] ?? playLaserShoot);
+}
+export function playWeaponHit(type: number): void {
+  playFileOrFallback(WEAPON_FILES[type]?.[1] ?? 'laser-hit.mp3', WEAPON_PROC[type]?.[1] ?? playLaserHit);
+}
+export function playWeaponMiss(type: number): void {
+  playFileOrFallback(WEAPON_FILES[type]?.[2] ?? 'laser-miss.mp3', WEAPON_PROC[type]?.[2] ?? playLaserMiss);
+}
+export function playWeaponCrit(): void {
+  playFileOrFallback('crit.mp3', playCrit);
 }
 
 /** Miss: quiet soft thud. */
