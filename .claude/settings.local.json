@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cd \"D:\\\\repos\\\\alpha-striker\" && npm run typecheck 2>&1)",
+      "Bash(cd \"D:\\\\repos\\\\alpha-striker\" && npm run build 2>&1)",
+      "Bash(cd \"D:/repos/alpha-striker\" && node -e \"const fs=require\\('fs'\\); const s=fs.readFileSync\\('dist/assets/index-CBadYzLW.js','utf8'\\); console.log\\(s.substring\\(0,3000\\)\\);\")"
     ]
   }
 }

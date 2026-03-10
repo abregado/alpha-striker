@@ -12,7 +12,7 @@ export function resumeAudio() {
 }
 
 // ── Audio file loading (try file first, fall back to procedural) ────────────
-const BASE_URL: string = (import.meta as any).env?.BASE_URL ?? '/';
+const BASE_URL: string = import.meta.env.BASE_URL;
 const fileCache = new Map<string, AudioBuffer | null>();
 
 async function loadBuffer(filename: string): Promise<AudioBuffer | null> {

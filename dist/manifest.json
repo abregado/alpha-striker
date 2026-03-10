@@ -1,0 +1,17 @@
+{
+  "name": "Alpha Strike — Attack Resolver",
+  "short_name": "Alpha Strike",
+  "start_url": "/alpha-striker/",
+  "scope": "/alpha-striker/",
+  "display": "standalone",
+  "background_color": "#0a0d12",
+  "theme_color": "#e07b39",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
